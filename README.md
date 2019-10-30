@@ -19,3 +19,8 @@ See https://www.pichlerluft.at
 See https://www.jablotron.com
 ## Notice
 Use return flap and Bus isolator
+## Requirements
+### PHP >= 7.0
+#### Provider
+##### myJabloton
++ PHP/curl Support
