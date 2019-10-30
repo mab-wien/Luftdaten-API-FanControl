@@ -1,0 +1,5 @@
+# AuthType Basic
+# AuthName "Password Protected Area"
+# AuthUserFile /path/to/.htpasswd
+# Require valid-user
+Options -Indexes
