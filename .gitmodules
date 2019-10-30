@@ -1,0 +1,4 @@
+[submodule "htdocs/class/provider/myjablotron"]
+	path = htdocs/class/provider/myjablotron
+	url = git@github.com:mab-wien/myjablotron.git
+	branch = master

@@ -15,12 +15,14 @@ abstract class sensorClassification
 
 class sensor
 {
-    protected $type = null;
     protected $json = null;
     protected $data = null;
     protected $pm2 = null;
     protected $pm10 = null;
     protected $classificationLevel = null;
+    protected $idPM2 = null;
+    protected $idPM10 = null;
+    protected $columnName = null;
     protected $debug = false;
 
     public function __construct(array $options = null)
@@ -57,16 +59,16 @@ class sensor
         return false;
     }
 
-    private function getSensorValueById(string $id, array $array, string $columnValue = 'value_type')
+    private function getSensorValueById(string $id, array $array)
     {
         if (!isset($array["sensordatavalues"])) {
             $this->_debug('sensordatavalues not found');
             return false;
         }
-        $sensordatavalues = $array["sensordatavalues"];
-        $column = @array_column($sensordatavalues, $columnValue);
+        $sensorDataValues = $array["sensordatavalues"];
+        $column = @array_column($sensorDataValues, $this->columnName);
         if (empty($column)) {
-            $this->_debug('array_column not found:' . $columnValue);
+            $this->_debug('array_column not found:' . $this->columnName);
             return false;
         }
         $idx = array_search($id, $column);
@@ -74,11 +76,11 @@ class sensor
             $this->_debug('id not found: ' . $id);
             return false;
         }
-        if (!isset($sensordatavalues[$idx]['value'])) {
+        if (!isset($sensorDataValues[$idx]['value'])) {
             $this->_debug('value not found');
             return false;
         }
-        return $sensordatavalues[$idx]['value'];
+        return $sensorDataValues[$idx]['value'];
     }
 
     public function initByInput(): string
@@ -96,7 +98,7 @@ class sensor
             $this->_debug('setSensorData');
             return false;
         }
-        if (!$this->setPMData($this->type, $this->json)) {
+        if (!$this->setPMData($this->json)) {
             $this->_debug('setPMData');
             return false;
         }
@@ -126,15 +128,14 @@ class sensor
         return true;
     }
 
-    private function setPMData(string $sensorType, array $jsonData): bool
+    private function setPMData(array $jsonData): bool
     {
-        // todo: check sensor types (P1/P2)
-        $pm2 = $this->getSensorValueById($sensorType . "_P1", $jsonData);
-        if ($this->isEmpty($pm2, 'input-json-sensor-data-' . $sensorType . '_P1')) {
+        $pm2 = $this->getSensorValueById($this->idPM2, $jsonData);
+        if ($this->isEmpty($pm2, 'input-json-sensor-data-' . $this->idPM2)) {
             return false;
         }
-        $pm10 = $this->getSensorValueById($sensorType . "_P2", $jsonData);
-        if ($this->isEmpty($pm10, 'input-json-sensor-data-' . $sensorType . '_P2')) {
+        $pm10 = $this->getSensorValueById($this->idPM10, $jsonData);
+        if ($this->isEmpty($pm10, 'input-json-sensor-data-' . $this->idPM10)) {
             return false;
         }
         $this->pm2 = $pm2;
@@ -167,7 +168,7 @@ class sensor
         if ($this->isEmpty($this->classificationLevel, 'setClassificationLevel')) {
             return false;
         }
-        $this->_debug('setClassificationLevel('.$this->classificationLevel.')');
+        $this->_debug('setClassificationLevel(' . $this->classificationLevel . ')');
         return true;
     }
 

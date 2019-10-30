@@ -25,14 +25,20 @@ function loadConfig(string $defaultIniFile, string $customIniFile): array
 }
 
 $config = loadConfig('default.ini', 'config.ini');
-$driver = isset($config['fan']['driver']) ? $config['fan']['driver'] : 'dummy';
-require_once(dirname(__FILE__) . '/class/provider/' . $driver . '.class.php');
+$provider = isset($config['fan']['provider']) ? $config['fan']['provider'] : 'dummy';
+require_once(dirname(__FILE__) . '/class/provider/' . $provider . '.class.php');
 
 /* main */
 $apiSensors = new sensor($config['sensor']);
 if ($apiSensors->initByInput()) {
     $fan = new fan($config['fan']);
     if ($fan->setTargetState($apiSensors->getClassificationLevel())) {
-        $fan->commit(new $driver($config[$driver]));
+        $pid = 0;
+        if ($config['general']['backgroundProcess']) {
+            $pid = pcntl_fork();
+        }
+        if ($pid == 0) {
+            $fan->commit(new $provider($config[$provider]));
+        }
     }
 }
