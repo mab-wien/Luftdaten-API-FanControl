@@ -37,8 +37,19 @@ if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
     $ip = $_SERVER['REMOTE_ADDR'];
 }
 $allowedIps = $config['general']['allowedIPs'];
-if (is_array($allowedIps) && !in_array($ip,$allowedIps)) {
+if (is_array($allowedIps) && !in_array($ip, $allowedIps)) {
     exit;
+}
+$httpAuthUser = $config['general']['httpAuthUser'];
+$httpAuthPass = $config['general']['httpAuthPass'];
+if ($httpAuthUser && $httpAuthPass) {
+    if (!isset($_SERVER['PHP_AUTH_USER']) ||
+        !isset($_SERVER['PHP_AUTH_PW']) ||
+        $_SERVER['PHP_AUTH_USER'] != $httpAuthUser ||
+        $_SERVER['PHP_AUTH_PW'] != $httpAuthPass
+    ) {
+        exit;
+    }
 }
 
 /* main */
