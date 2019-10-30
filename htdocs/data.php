@@ -28,6 +28,19 @@ $config = loadConfig('default.ini', 'config.ini');
 $provider = isset($config['fan']['provider']) ? $config['fan']['provider'] : 'dummy';
 require_once(dirname(__FILE__) . '/class/provider/' . $provider . '.class.php');
 
+/* check auth */
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $ip = $_SERVER['HTTP_CLIENT_IP'];
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+} else {
+    $ip = $_SERVER['REMOTE_ADDR'];
+}
+$allowedIps = $config['general']['allowedIPs'];
+if (is_array($allowedIps) && !in_array($ip,$allowedIps)) {
+    exit;
+}
+
 /* main */
 $apiSensors = new sensor($config['sensor']);
 if ($apiSensors->initByInput()) {
