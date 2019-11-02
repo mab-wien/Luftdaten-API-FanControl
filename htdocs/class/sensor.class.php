@@ -148,7 +148,7 @@ class sensor
     {
         if ($this->pm10 <= 2 && $this->pm2 <= 2) {
             $this->classificationLevel = sensorClassification::best;
-        } else if ($this->pm10 <= 54 && $this->pm2 <= 6) {
+        } else if ($this->pm10 <= 27 && $this->pm2 <= 6) {
             $this->classificationLevel = sensorClassification::better;
         } else if ($this->pm10 <= 54 && $this->pm2 <= 12) {
             $this->classificationLevel = sensorClassification::good;
