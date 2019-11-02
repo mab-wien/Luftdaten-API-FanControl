@@ -1,10 +1,8 @@
 <?php
 require_once(dirname(__FILE__) . '/myjablotron/myjablotron.class.php');
 
-class jablotron implements fanController
+class jablotron extends basic implements fanController
 {
-    protected $debug = false;
-
     protected $username = null;
     protected $password = null;
     protected $pin = null;
@@ -20,9 +18,9 @@ class jablotron implements fanController
 
     public function __construct(array $options = null)
     {
+        parent::__construct($options);
         $this->currentState = new fanState();
         $this->targetState = new fanState();
-        $this->setOptions($options);
     }
 
     public function __destruct()
@@ -104,17 +102,6 @@ class jablotron implements fanController
         return $this->currentPGM[$id]['stav'];
     }
 
-    private function setOptions($options): bool
-    {
-        if (empty($options)) {
-            return false;
-        }
-        foreach ($options as $key => $value) {
-            $this->$key = $value;
-        }
-        return true;
-    }
-
     public function _setRun(bool $state): bool
     {
         if (!$this->init()) {
@@ -154,14 +141,5 @@ class jablotron implements fanController
         // Implement _error() method.
         $this->_debug('_error("' . $msg . '")');
         return true;
-    }
-
-    private function _debug(string $msg): bool
-    {
-        if ($this->debug) {
-            echo $msg . "\n";
-            return true;
-        }
-        return false;
     }
 }

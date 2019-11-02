@@ -5,64 +5,35 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 /* includes */
+require_once(dirname(__FILE__) . '/class/config.class.php');
+require_once(dirname(__FILE__) . '/class/basic.class.php');
+require_once(dirname(__FILE__) . '/class/auth.class.php');
 require_once(dirname(__FILE__) . '/class/sensor.class.php');
 require_once(dirname(__FILE__) . '/class/fan.class.php');
 
 /* config */
-function loadConfig(string $defaultIniFile, string $customIniFile): array
-{
-    $config = parse_ini_file($defaultIniFile, true, INI_SCANNER_TYPED);
-    if (!file_exists($customIniFile)) {
-        return $config;
-    }
-    $customConfig = parse_ini_file($customIniFile, true, INI_SCANNER_TYPED);
-    foreach ($customConfig as $key => $value) {
-        foreach ($value as $vKey => $vValue) {
-            $config[$key][$vKey] = $vValue;
-        }
-    }
-    return $config;
-}
-
-$config = loadConfig('default.ini', 'config.ini');
-$provider = isset($config['fan']['provider']) ? $config['fan']['provider'] : 'dummy';
+$config = new config('default.ini');
+$config->setOverride('config.ini');
+$provider = $config->getFanProvider();
 require_once(dirname(__FILE__) . '/class/provider/' . $provider . '.class.php');
 
 /* check auth */
-if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-    $ip = $_SERVER['HTTP_CLIENT_IP'];
-} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-} else {
-    $ip = $_SERVER['REMOTE_ADDR'];
-}
-$allowedIps = $config['general']['allowedIPs'];
-if (is_array($allowedIps) && !in_array($ip, $allowedIps)) {
+$auth = new auth($config->get('auth'));
+if (!$auth->isIpAllowed() || !$auth->isAuthenticated()) {
     exit;
-}
-$httpAuthUser = $config['general']['httpAuthUser'];
-$httpAuthPass = $config['general']['httpAuthPass'];
-if ($httpAuthUser && $httpAuthPass) {
-    if (!isset($_SERVER['PHP_AUTH_USER']) ||
-        !isset($_SERVER['PHP_AUTH_PW']) ||
-        $_SERVER['PHP_AUTH_USER'] != $httpAuthUser ||
-        $_SERVER['PHP_AUTH_PW'] != $httpAuthPass
-    ) {
-        exit;
-    }
 }
 
 /* main */
-$apiSensors = new sensor($config['sensor']);
+$apiSensors = new sensor($config->get('sensor'));
 if ($apiSensors->initByInput()) {
-    $fan = new fan($config['fan']);
+    $fan = new fan($config->get('fan'));
     if ($fan->setTargetState($apiSensors->getClassificationLevel())) {
         $pid = 0;
-        if ($config['general']['backgroundProcess']) {
+        if ($config->get('general', 'backgroundProcess')) {
             $pid = pcntl_fork();
         }
         if ($pid == 0) {
-            $fan->commit(new $provider($config[$provider]));
+            $fan->commit(new $provider($config->get($provider)));
         }
     }
 }

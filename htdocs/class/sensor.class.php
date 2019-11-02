@@ -13,7 +13,7 @@ abstract class sensorClassification
     const dangerousest = 9;
 }
 
-class sensor
+class sensor extends basic
 {
     protected $json = null;
     protected $data = null;
@@ -23,31 +23,10 @@ class sensor
     protected $idPM2 = null;
     protected $idPM10 = null;
     protected $columnName = null;
-    protected $debug = false;
 
     public function __construct(array $options = null)
     {
-        $this->setOptions($options);
-    }
-
-    private function setOptions($options): bool
-    {
-        if (empty($options)) {
-            return false;
-        }
-        foreach ($options as $key => $value) {
-            $this->$key = $value;
-        }
-        return true;
-    }
-
-    private function _debug(String $msg): bool
-    {
-        if ($this->debug) {
-            echo 'Debug: ' . $msg . "\n";
-            return true;
-        }
-        return false;
+        parent::__construct($options);
     }
 
     private function isEmpty($value, String $msg): bool
