@@ -6,7 +6,7 @@ interface fanController
 
     public function _setMax(bool $state): bool;
 
-    function _error(String $msg): bool;
+    public function _error(String $msg): bool;
 }
 
 class fanState
