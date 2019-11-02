@@ -1,23 +1,10 @@
 <?php
 
-class dummy implements fanController
+class dummy extends basic implements fanController
 {
-    protected $debug = false;
-
     public function __construct(array $options = null)
     {
-        $this->setOptions($options);
-    }
-
-    private function setOptions($options): bool
-    {
-        if (empty($options)) {
-            return false;
-        }
-        foreach ($options as $key => $value) {
-            $this->$key = $value;
-        }
-        return true;
+        parent::__construct($options);
     }
 
     public function _setRun(bool $state): bool
@@ -41,12 +28,4 @@ class dummy implements fanController
         return true;
     }
 
-    private function _debug(string $msg): bool
-    {
-        if ($this->debug) {
-            echo $msg . "\n";
-            return true;
-        }
-        return false;
-    }
 }

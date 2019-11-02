@@ -6,7 +6,7 @@ interface fanController
 
     public function _setMax(bool $state): bool;
 
-    public function _error(String $msg): bool;
+    function _error(String $msg): bool;
 }
 
 class fanState
@@ -16,7 +16,7 @@ class fanState
     public $classificationLevel = null;
 }
 
-class fan
+class fan extends basic
 {
     protected $stateFile = null;
     protected $currentState = null;
@@ -24,26 +24,14 @@ class fan
     protected $runClassificationLevel = null;
     protected $maxClassificationLevel = null;
 
-    protected $debug = false;
-
     public function __construct(array $options = null)
     {
+        parent::__construct($options);
+
         $this->currentState = new fanState();
         $this->targetState = new fanState();
-        $this->setOptions($options);
         $this->setCurrentState();
 
-    }
-
-    private function setOptions($options): bool
-    {
-        if (empty($options)) {
-            return false;
-        }
-        foreach ($options as $key => $value) {
-            $this->$key = $value;
-        }
-        return true;
     }
 
     private function setCurrentState(): bool
@@ -58,12 +46,16 @@ class fan
         return false;
     }
 
-    private function getRunClassificationLevel ():int {
-        return constant(sprintf('%s::%s',sensorClassification::class, $this->runClassificationLevel));
+    private function getRunClassificationLevel(): int
+    {
+        return constant(sprintf('%s::%s', sensorClassification::class, $this->runClassificationLevel));
     }
-    private function getMaxClassificationLevel ():int {
-        return constant(sprintf('%s::%s',sensorClassification::class, $this->maxClassificationLevel));
+
+    private function getMaxClassificationLevel(): int
+    {
+        return constant(sprintf('%s::%s', sensorClassification::class, $this->maxClassificationLevel));
     }
+
     public function setTargetState(Int $classificationLevel)
     {
         if (empty($classificationLevel)) {
@@ -134,12 +126,4 @@ class fan
         return true;
     }
 
-    private function _debug(string $msg): bool
-    {
-        if ($this->debug) {
-            echo $msg . "\n";
-            return true;
-        }
-        return false;
-    }
 }
