@@ -21,6 +21,9 @@ class fan
     protected $stateFile = null;
     protected $currentState = null;
     protected $targetState = null;
+    protected $runClassificationLevel = null;
+    protected $maxClassificationLevel = null;
+
     protected $debug = false;
 
     public function __construct(array $options = null)
@@ -55,6 +58,12 @@ class fan
         return false;
     }
 
+    private function getRunClassificationLevel ():int {
+        return constant(sprintf('%s::%s',sensorClassification::class, $this->runClassificationLevel));
+    }
+    private function getMaxClassificationLevel ():int {
+        return constant(sprintf('%s::%s',sensorClassification::class, $this->maxClassificationLevel));
+    }
     public function setTargetState(Int $classificationLevel)
     {
         if (empty($classificationLevel)) {
@@ -62,14 +71,14 @@ class fan
         }
         $this->targetState = new fanState();
         $this->targetState->classificationLevel = $classificationLevel;
-        if ($classificationLevel < sensorClassification::moderate) {
+        if ($classificationLevel <= $this->getRunClassificationLevel()) {
             $this->targetState->run = true;
-        } elseif ($classificationLevel > sensorClassification::moderate) {
+        } elseif ($classificationLevel > $this->getRunClassificationLevel()) {
             $this->targetState->run = false;
         }
-        if ($classificationLevel < sensorClassification::better) {
+        if ($classificationLevel <= $this->getMaxClassificationLevel()) {
             $this->targetState->max = true;
-        } elseif ($classificationLevel > sensorClassification::better) {
+        } elseif ($classificationLevel > $this->getMaxClassificationLevel()) {
             $this->targetState->max = false;
         }
         return true;
