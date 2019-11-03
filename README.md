@@ -24,3 +24,7 @@ Use return flap and Bus isolator
 #### Provider
 ##### myJabloton
 + PHP/curl Support
+### Optional
+#### Docker
++ docker build -t luftdaten-apil .
++ docker run -d --name luftdaten-api -d -p 80:80  -v "htdocs":/var/www/html fan-control
