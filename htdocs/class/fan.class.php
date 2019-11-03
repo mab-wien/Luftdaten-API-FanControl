@@ -18,10 +18,17 @@ interface fanController
     public function _setMax(bool $state): bool;
 
     /**
+     * @param int $level
+     * @return bool
+     */
+    public function _setClassificationLevel(int $level): bool;
+
+    /**
      * @param String $msg
      * @return bool
      */
     public function _error(String $msg): bool;
+
 }
 
 /**
@@ -31,6 +38,8 @@ class fanState
 {
     public $run = null;
     public $max = null;
+    public $runWaitCnt = 0;
+    public $maxWaitCnt = 0;
     public $classificationLevel = null;
 }
 
@@ -50,6 +59,8 @@ class fan extends basic
     protected $targetState = null;
     protected $runClassificationLevel = null;
     protected $maxClassificationLevel = null;
+    protected $runWaitCnt = 0;
+    protected $maxWaitCnt = 0;
 
     /**
      * fan constructor.
@@ -122,51 +133,75 @@ class fan extends basic
 
     /**
      * @param fanController $controller
+     * @param string $action
+     * @param $defaultReturn
      * @return bool
      */
-    public function commit(fanController $controller)
+    private function _commit(fanController $controller, string $action, $defaultReturn): bool
+    {
+        if ($this->targetState->$action === NULL) {
+            $this->_debug('targetState->' . $action . ' is null');
+            return $defaultReturn;
+        }
+        $waitCnt = $action . 'WaitCnt';
+        if ($this->targetState->$action === $this->currentState->$action) {
+            $this->_debug('targetState->' . $action . ' is currentState');
+            if ($this->currentState->$waitCnt != 0) {
+                $this->currentState->$waitCnt = 0;
+                return true;
+            }
+            return $defaultReturn;
+        }
+        if ($this->targetState->$action && isset($this->$waitCnt) && !empty($this->$waitCnt)) {
+            if ($this->$waitCnt > $this->currentState->$waitCnt) {
+                $this->currentState->$waitCnt++;
+                $this->_debug($action . ' - waitCnt (' . $this->currentState->$waitCnt . '/' . $this->$waitCnt . ')');
+                return true;
+            }
+        }
+        $actionMethod = '_set' . ucfirst($action);
+        if ($controller->$actionMethod($this->targetState->$action)) {
+            $this->currentState->$action = $this->targetState->$action;
+            $this->currentState->$waitCnt = 0;
+            return true;
+        } else {
+            $this->_debug('error: ' . $actionMethod . '(' . $this->targetState->$action . ');');
+            return $defaultReturn;
+        }
+    }
+
+    /**
+     * @param fanController $controller
+     * @return bool
+     */
+    public function commit(fanController $controller): bool
     {
         $changes = false;
-        $this->_debug("current: " . print_r($this->currentState, true));
-        if ($this->targetState->run !== NULL) {
-            if ($this->currentState->run !== $this->targetState->run) {
-                if ($controller->_setRun($this->targetState->run)) {
-                    $this->currentState->run = $this->targetState->run;
-                    $changes = true;
-                } else {
-                    $this->_debug('error: _setRun(' . $this->targetState->run . ');');
-                    return false;
-                }
-            }
-        }
-        if ($this->targetState->max !== NULL) {
-            if ($this->currentState->max !== $this->targetState->max) {
-                if ($controller->_setMax($this->targetState->max)) {
-                    $this->currentState->max = $this->targetState->max;
-                    $changes = true;
-                } else {
-                    $this->_debug('error: _setMax(' . $this->targetState->max . ');');
-                    return false;
-                }
-            }
-        }
-        if ($this->currentState->classificationLevel !== $this->targetState->classificationLevel) {
-            $this->currentState->classificationLevel = $this->targetState->classificationLevel;
-            $changes = true;
+        $actions = [
+            'run',
+            'max',
+            'classificationLevel',
+        ];
+        foreach ($actions as $action) {
+            $changes = $this->_commit(
+                $controller,
+                $action,
+                $changes
+            );
         }
         if ($changes) {
-            $this->_saveSate();
+            $this->_saveState();
             if ($this->debug) {
                 $this->_debug("target: " . print_r($this->targetState, true));
             }
         }
-        return true;
+        return $changes;
     }
 
     /**
      * @return bool
      */
-    private function _saveSate(): bool
+    private function _saveState(): bool
     {
         if (empty($this->stateFile)) {
             return false;

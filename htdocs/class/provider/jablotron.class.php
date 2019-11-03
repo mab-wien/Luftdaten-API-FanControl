@@ -159,6 +159,7 @@ class jablotron extends basic implements fanController
         }
         $this->targetState->run = $state;
         if ($this->currentState->run == $state) {
+            $this->_debug('_setRun(' . ($state ? 'true' : 'false') . '); is currentSate');
             return true;
         }
         $this->_debug('_setRun(' . ($state ? 'true' : 'false') . ');');
@@ -180,6 +181,7 @@ class jablotron extends basic implements fanController
         }
         $this->targetState->max = $state;
         if ($this->currentState->max == $state) {
+            $this->_debug('_setMax(' . ($state ? 'true' : 'false') . '); is currentSate');
             return true;
         }
         $this->_debug('_setMax(' . ($state ? 'true' : 'false') . ');');
@@ -188,6 +190,17 @@ class jablotron extends basic implements fanController
         } else {
             return $this->myJA->unlock('PGM_' . $this->maxPGMId, $this->pin);
         }
+    }
+
+    /**
+     * @param int $level
+     * @return bool
+     */
+    public function _setClassificationLevel(int $level): bool
+    {
+        // Implement _setClassificationLevel() method.
+        $this->targetState->classificationLevel = $level;
+        return true;
     }
 
     /**
