@@ -152,12 +152,14 @@ class sensor extends basic
         if ($this->isEmpty($pm2, 'input-json-sensor-data-' . $this->idPM2)) {
             return false;
         }
+        $this->pm2 = $pm2;
+        $this->_debug('pm2: ' . $this->pm2);
         $pm10 = $this->getSensorValueById($this->idPM10, $jsonData);
         if ($this->isEmpty($pm10, 'input-json-sensor-data-' . $this->idPM10)) {
             return false;
         }
-        $this->pm2 = $pm2;
         $this->pm10 = $pm10;
+        $this->_debug('pm10: ' . $this->pm10);
         return true;
     }
 
