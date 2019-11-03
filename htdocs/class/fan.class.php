@@ -152,7 +152,8 @@ class fan extends basic
             }
             return $defaultReturn;
         }
-        if ($this->targetState->$action && isset($this->$waitCnt) && !empty($this->$waitCnt)) {
+        // optimize waitCnt ($this->targetState->$action &&)
+        if (isset($this->$waitCnt) && !empty($this->$waitCnt)) {
             if ($this->$waitCnt > $this->currentState->$waitCnt) {
                 $this->currentState->$waitCnt++;
                 $this->_debug($action . ' - waitCnt (' . $this->currentState->$waitCnt . '/' . $this->$waitCnt . ')');
