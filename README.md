@@ -18,7 +18,8 @@ See https://www.pichlerluft.at
 ### JB-118N [Bus/Relais]
 See https://www.jablotron.com
 ## Notice
-Use return flap and Bus isolator
++ Use return flap and Bus isolator
++ Git clone with --recurse-submodules
 ## Requirements
 ### PHP >= 7.0
 #### Provider
@@ -26,5 +27,4 @@ Use return flap and Bus isolator
 + PHP/curl Support
 ### Optional
 #### Docker
-+ docker build -t luftdaten-apil .
-+ docker run -d --name luftdaten-api -d -p 80:80  -v "htdocs":/var/www/html fan-control
++ See docker-rebuild.sh
