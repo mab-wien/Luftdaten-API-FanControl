@@ -14,8 +14,7 @@ require_once(dirname(__FILE__) . '/class/fan.class.php');
 /* config */
 $config = new config('default.ini');
 $config->setOverride('config.ini');
-$provider = $config->getFanProvider();
-require_once(dirname(__FILE__) . '/class/provider/' . $provider . '.class.php');
+$provider = $config->getFanProvider('dummy');
 
 /* check auth */
 $auth = new auth($config->get('auth'));

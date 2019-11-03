@@ -1,16 +1,26 @@
 <?php
 
+/**
+ * Class auth
+ */
 class auth extends basic
 {
     protected $allowedIPs = null;
     protected $httpAuthUser = null;
     protected $httpAuthPass = null;
 
+    /**
+     * auth constructor.
+     * @param array|null $options
+     */
     public function __construct(array $options = null)
     {
         parent::__construct($options);
     }
 
+    /**
+     * @return bool
+     */
     public function isIpAllowed(): bool
     {
         if (empty($this->allowedIPs)) {
@@ -32,6 +42,9 @@ class auth extends basic
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isAuthenticated(): bool
     {
         if (empty($this->httpAuthUser) || empty($this->httpAuthPass)) {

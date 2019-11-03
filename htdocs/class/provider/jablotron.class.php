@@ -1,21 +1,37 @@
 <?php
 require_once(dirname(__FILE__) . '/myjablotron/myjablotron.class.php');
 
+/**
+ * Class jablotron
+ */
 class jablotron extends basic implements fanController
 {
+    /**
+     * @var fanState|null
+     */
+    protected $currentState = null;
+    /**
+     * @var fanState|null
+     */
+    protected $targetState = null;
+    /**
+     * @var MyJablotron|null
+     */
+    protected $myJA = null;
     protected $username = null;
     protected $password = null;
     protected $pin = null;
     protected $authenticated = false;
-    protected $myJA = null;
-    protected $currentState = null;
-    protected $targetState = null;
     protected $currentPGM = null;
     protected $runPGMId = null;
     protected $maxPGMId = null;
     protected $loggedIn = null;
     protected $cookieFile = null;
 
+    /**
+     * jablotron constructor.
+     * @param array|null $options
+     */
     public function __construct(array $options = null)
     {
         parent::__construct($options);
@@ -23,22 +39,43 @@ class jablotron extends basic implements fanController
         $this->targetState = new fanState();
     }
 
+    /**
+     */
     public function __destruct()
     {
         if ($this->myJA !== NULL) {
-            $this->_debug("jablotron-target: " . print_r($this->targetState, true));
+            $this->_debug("target: " . print_r($this->targetState, true));
+            $this->debugMyJAErrors();
+        }
+
+    }
+
+    /**
+     */
+    private function debugMyJAErrors()
+    {
+        if ($this->myJA !== NULL) {
+            $errors = $this->myJA->getErrors();
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    $this->_debug('myJAError: ' . $error);
+                }
+            }
         }
     }
 
+    /**
+     * @return bool
+     */
     private function init(): bool
     {
         if ($this->myJA !== NULL) {
             return true;
         }
-        define('MY_COOKIE_FILE', $this->cookieFile);
         $this->myJA = new MyJablotron(
             $this->username,
-            $this->password
+            $this->password,
+            $this->cookieFile
         );
         $this->myJA->debug($this->debug);
         if ($this->login()) {
@@ -46,13 +83,16 @@ class jablotron extends basic implements fanController
                 $this->currentState->run = $this->getSensorValueById($this->runPGMId);
                 $this->currentState->max = $this->getSensorValueById($this->maxPGMId);
                 $this->currentState->classificationLevel = null;
-                $this->_debug("jablotron-current: " . print_r($this->currentState, true));
+                $this->_debug("current: " . print_r($this->currentState, true));
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * @return bool
+     */
     private function login(): bool
     {
         if ($this->myJA->login()) {
@@ -61,13 +101,15 @@ class jablotron extends basic implements fanController
             $ret = true;
         } else {
             $this->_debug('authenticated=false');
-            $this->_debug($this->myJA->getErrors()[0]);
             $ret = false;
         }
         $this->loggedIn = $ret;
         return $ret;
     }
 
+    /**
+     * @return bool
+     */
     private function getCurrentPGM(): bool
     {
         $currentPGM = $this->myJA->getPGM();
@@ -84,6 +126,10 @@ class jablotron extends basic implements fanController
         }
     }
 
+    /**
+     * @param string $id
+     * @return bool|mixed
+     */
     private function getSensorValueById(string $id)
     {
         $id = $id - 1;
@@ -102,6 +148,10 @@ class jablotron extends basic implements fanController
         return $this->currentPGM[$id]['stav'];
     }
 
+    /**
+     * @param bool $state
+     * @return bool
+     */
     public function _setRun(bool $state): bool
     {
         if (!$this->init()) {
@@ -119,6 +169,10 @@ class jablotron extends basic implements fanController
         }
     }
 
+    /**
+     * @param bool $state
+     * @return bool
+     */
     public function _setMax(bool $state): bool
     {
         if (!$this->init()) {
@@ -136,6 +190,10 @@ class jablotron extends basic implements fanController
         }
     }
 
+    /**
+     * @param String $msg
+     * @return bool
+     */
     public function _error(String $msg): bool
     {
         // Implement _error() method.

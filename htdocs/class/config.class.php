@@ -1,14 +1,27 @@
 <?php
 
+/**
+ * Class config
+ */
 class config
 {
     protected $configSettings = null;
 
+    /**
+     * config constructor.
+     * @param string $defaultIniFile
+     */
     public function __construct(string $defaultIniFile)
     {
         $this->loadConfig($defaultIniFile);
     }
 
+    /**
+     * @param string|null $section
+     * @param string|null $varName
+     * @param null $defaultValue
+     * @return array|mixed|null
+     */
     public function get(string $section = null, string $varName = null, $defaultValue = null)
     {
         if (!is_array($this->configSettings)) {
@@ -29,6 +42,10 @@ class config
         return $this->configSettings[$section][$varName];
     }
 
+    /**
+     * @param string $defaultIniFile
+     * @return bool
+     */
     private function loadConfig(string $defaultIniFile): bool
     {
         if (!file_exists(($defaultIniFile))) {
@@ -41,6 +58,10 @@ class config
         return true;
     }
 
+    /**
+     * @param string $overrideConfigFile
+     * @return array
+     */
     public function getOverrides(string $overrideConfigFile): array
     {
         if (!file_exists(($overrideConfigFile))) {
@@ -62,6 +83,10 @@ class config
         return $configSettings;
     }
 
+    /**
+     * @param string $overrideConfigFile
+     * @return bool
+     */
     public function setOverride(string $overrideConfigFile): bool
     {
         $overrideConfig = $this->getOverrides($overrideConfigFile);
@@ -72,9 +97,15 @@ class config
         return true;
     }
 
-    public function getFanProvider(string $defaultProvider = 'dummy'): string
+    /**
+     * @param string $defaultProvider
+     * @return string
+     */
+    public function getFanProvider(string $defaultProvider): string
     {
-        return $this->get('fan', 'provider', 'dummy');
+        $provider = $this->get('fan', 'provider', $defaultProvider);
+        $classPath = dirname(__FILE__) . '/provider/' . $provider . '.class.php';
+        include_once($classPath);
+        return $provider;
     }
-
 }

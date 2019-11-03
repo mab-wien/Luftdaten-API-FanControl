@@ -1,14 +1,32 @@
 <?php
 
+/**
+ * Interface fanController
+ */
 interface fanController
 {
+    /**
+     * @param bool $state
+     * @return bool
+     */
     public function _setRun(bool $state): bool;
 
+    /**
+     * @param bool $state
+     * @return bool
+     */
     public function _setMax(bool $state): bool;
 
+    /**
+     * @param String $msg
+     * @return bool
+     */
     public function _error(String $msg): bool;
 }
 
+/**
+ * Class fanState
+ */
 class fanState
 {
     public $run = null;
@@ -16,14 +34,27 @@ class fanState
     public $classificationLevel = null;
 }
 
+/**
+ * Class fan
+ */
 class fan extends basic
 {
     protected $stateFile = null;
+    /**
+     * @var fanState|null
+     */
     protected $currentState = null;
+    /**
+     * @var fanState|null
+     */
     protected $targetState = null;
     protected $runClassificationLevel = null;
     protected $maxClassificationLevel = null;
 
+    /**
+     * fan constructor.
+     * @param array|null $options
+     */
     public function __construct(array $options = null)
     {
         parent::__construct($options);
@@ -34,6 +65,9 @@ class fan extends basic
 
     }
 
+    /**
+     * @return bool
+     */
     private function setCurrentState(): bool
     {
         if (file_exists($this->stateFile)) {
@@ -46,16 +80,26 @@ class fan extends basic
         return false;
     }
 
+    /**
+     * @return int
+     */
     private function getRunClassificationLevel(): int
     {
         return constant(sprintf('%s::%s', sensorClassification::class, $this->runClassificationLevel));
     }
 
+    /**
+     * @return int
+     */
     private function getMaxClassificationLevel(): int
     {
         return constant(sprintf('%s::%s', sensorClassification::class, $this->maxClassificationLevel));
     }
 
+    /**
+     * @param Int $classificationLevel
+     * @return bool
+     */
     public function setTargetState(Int $classificationLevel)
     {
         if (empty($classificationLevel)) {
@@ -76,6 +120,10 @@ class fan extends basic
         return true;
     }
 
+    /**
+     * @param fanController $controller
+     * @return bool
+     */
     public function commit(fanController $controller)
     {
         $changes = false;
@@ -115,6 +163,9 @@ class fan extends basic
         return true;
     }
 
+    /**
+     * @return bool
+     */
     private function _saveSate(): bool
     {
         if (empty($this->stateFile)) {
