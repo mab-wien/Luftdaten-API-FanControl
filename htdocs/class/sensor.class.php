@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class sensorClassification
+ */
 abstract class sensorClassification
 {
     const best = 1;
@@ -13,6 +16,9 @@ abstract class sensorClassification
     const dangerousest = 9;
 }
 
+/**
+ * Class sensor
+ */
 class sensor extends basic
 {
     protected $json = null;
@@ -24,11 +30,20 @@ class sensor extends basic
     protected $idPM10 = null;
     protected $columnName = null;
 
+    /**
+     * sensor constructor.
+     * @param array|null $options
+     */
     public function __construct(array $options = null)
     {
         parent::__construct($options);
     }
 
+    /**
+     * @param $value
+     * @param String $msg
+     * @return bool
+     */
     private function isEmpty($value, String $msg): bool
     {
         if (empty($value)) {
@@ -38,6 +53,11 @@ class sensor extends basic
         return false;
     }
 
+    /**
+     * @param string $id
+     * @param array $array
+     * @return bool|mixed
+     */
     private function getSensorValueById(string $id, array $array)
     {
         if (!isset($array["sensordatavalues"])) {
@@ -62,11 +82,18 @@ class sensor extends basic
         return $sensorDataValues[$idx]['value'];
     }
 
+    /**
+     * @return string
+     */
     public function initByInput(): string
     {
         return $this->init(file_get_contents("php://input"));
     }
 
+    /**
+     * @param string $data
+     * @return bool
+     */
     public function init(string $data): bool
     {
         if (!$this->setJsonData($data)) {
@@ -88,6 +115,10 @@ class sensor extends basic
         return true;
     }
 
+    /**
+     * @param string $data
+     * @return bool
+     */
     private function setJsonData(string $data): bool
     {
         $this->json = json_decode($data, true);
@@ -97,6 +128,10 @@ class sensor extends basic
         return true;
     }
 
+    /**
+     * @param array $jsonData
+     * @return bool
+     */
     private function setSensorData(array $jsonData): bool
     {
         $sensorData = $jsonData["sensordatavalues"];
@@ -107,6 +142,10 @@ class sensor extends basic
         return true;
     }
 
+    /**
+     * @param array $jsonData
+     * @return bool
+     */
     private function setPMData(array $jsonData): bool
     {
         $pm2 = $this->getSensorValueById($this->idPM2, $jsonData);
@@ -123,6 +162,9 @@ class sensor extends basic
     }
 
 
+    /**
+     * @return bool
+     */
     private function setClassificationLevel(): bool
     {
         if ($this->pm10 <= 2 && $this->pm2 <= 2) {
@@ -151,6 +193,9 @@ class sensor extends basic
         return true;
     }
 
+    /**
+     * @return int
+     */
     public function getClassificationLevel(): int
     {
         return $this->classificationLevel;

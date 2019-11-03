@@ -1,14 +1,28 @@
 <?php
 
+/**
+ * Class basic
+ */
 class basic
 {
+    /**
+     * @var bool
+     */
     public $debug = false;
 
+    /**
+     * basic constructor.
+     * @param array|null $options
+     */
     public function __construct(array $options = null)
     {
         $this->_setOptions($options);
     }
 
+    /**
+     * @param $options
+     * @return bool
+     */
     private function _setOptions($options): bool
     {
         if (empty($options)) {
@@ -21,6 +35,10 @@ class basic
         return true;
     }
 
+    /**
+     * @param string $msg
+     * @return bool
+     */
     protected function _debug(string $msg): bool
     {
         if ($this->debug) {
