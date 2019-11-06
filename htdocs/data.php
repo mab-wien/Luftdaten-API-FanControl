@@ -5,16 +5,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 /* includes */
-require_once(dirname(__FILE__) . '/class/config.class.php');
-require_once(dirname(__FILE__) . '/class/basic.class.php');
-require_once(dirname(__FILE__) . '/class/auth.class.php');
-require_once(dirname(__FILE__) . '/class/sensor.class.php');
-require_once(dirname(__FILE__) . '/class/fan.class.php');
+spl_autoload_register(function ($class_name) {
+    require_once(dirname(__FILE__) . '/class/' . $class_name . '.class.php');
+});
 
 /* config */
 $config = new config('default.ini');
 $config->setOverride('config.ini');
-$provider = $config->getFanProvider('dummy');
 
 /* check auth */
 $auth = new auth($config->get('auth'));
@@ -23,6 +20,8 @@ if (!$auth->isIpAllowed() || !$auth->isAuthenticated()) {
 }
 
 /* main */
+$provider = $config->getFanProvider('dummy');
+sun::getInstance($config->get('sun'));
 $apiSensors = new sensor($config->get('sensor'));
 if ($apiSensors->initByInput()) {
     $fan = new fan($config->get('fan'));
