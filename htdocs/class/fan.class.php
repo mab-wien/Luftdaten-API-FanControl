@@ -1,49 +1,6 @@
 <?php
 
 /**
- * Interface fanController
- */
-interface fanController
-{
-    /**
-     * @param bool $state
-     * @return bool
-     */
-    public function _setRun(bool $state): bool;
-
-    /**
-     * @param bool $state
-     * @return bool
-     */
-    public function _setMax(bool $state): bool;
-
-    /**
-     * @param int $level
-     * @return bool
-     */
-    public function _setClassificationLevel(int $level): bool;
-
-    /**
-     * @param String $msg
-     * @return bool
-     */
-    public function _error(String $msg): bool;
-
-}
-
-/**
- * Class fanState
- */
-class fanState
-{
-    public $run = null;
-    public $max = null;
-    public $runWaitCnt = 0;
-    public $maxWaitCnt = 0;
-    public $classificationLevel = null;
-}
-
-/**
  * Class fan
  */
 class fan extends basic
@@ -60,6 +17,9 @@ class fan extends basic
     protected $runClassificationLevel = null;
     protected $maxClassificationLevel = null;
     protected $runWaitCnt = 0;
+    protected $runIf = null;
+    protected $maxIf = null;
+    protected $classificationLevelIf = null;
     protected $maxWaitCnt = 0;
 
     /**
@@ -143,17 +103,29 @@ class fan extends basic
             $this->_debug('targetState->' . $action . ' is null');
             return $defaultReturn;
         }
+        $ifMethod = $action . 'If';
+        if ($this->targetState->$action && is_array($this->$ifMethod)) {
+            foreach ($this->$ifMethod as $ifMethod) {
+                if (!is_callable($ifMethod)) {
+                    continue;
+                }
+                if (!$this->targetState->$action) {
+                    break;
+                }
+                $this->targetState->$action = call_user_func($ifMethod);
+                $this->_debug($action . ' - ' . $ifMethod . '=> ' . $this->targetState->$action);
+            }
+        }
         $waitCnt = $action . 'WaitCnt';
         if ($this->targetState->$action === $this->currentState->$action) {
-            $this->_debug('targetState->' . $action . ' is currentState');
+            $this->_debug('targetState->' . $action . ' is currentState => ' . $this->currentState->$action);
             if ($this->currentState->$waitCnt != 0) {
                 $this->currentState->$waitCnt = 0;
                 return true;
             }
             return $defaultReturn;
         }
-        // optimize waitCnt ($this->targetState->$action &&)
-        if (isset($this->$waitCnt) && !empty($this->$waitCnt)) {
+        if ($this->targetState->$action && isset($this->$waitCnt) && !empty($this->$waitCnt)) {
             if ($this->$waitCnt > $this->currentState->$waitCnt) {
                 $this->currentState->$waitCnt++;
                 $this->_debug($action . ' - waitCnt (' . $this->currentState->$waitCnt . '/' . $this->$waitCnt . ')');

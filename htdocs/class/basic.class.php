@@ -42,12 +42,18 @@ class basic
     protected function _debug(string $msg): bool
     {
         if ($this->debug) {
+            try {
+                $date = new DateTime();
+                $date = $date->format("Y-m-d h:i:s");
+            } catch (Exception $exception) {
+                $date = '#';
+                echo 'Exception: ', $exception->getMessage(), "\n";
+            };
             $bt = debug_backtrace();
             $caller = array_shift($bt);
-            $date = new DateTime();
-            $date = $date->format("Y-m-d h:i:s");
             echo $date . ': ' . get_class($this) . ':' . $caller['line'] . '# ' . $msg . "\n";
             return true;
+
         }
         return false;
     }
