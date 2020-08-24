@@ -10,8 +10,11 @@ spl_autoload_register(function ($class_name) {
 });
 
 /* config */
-$config = new config('default.ini');
-$config->setOverride('config.ini');
+$config = new config('config/default.ini');
+$config->setOverride('config/settings.ini');
+$configSunExt = sun::isDay() ? 'day' : 'night';
+$config->setOverride('config/'. (date('I') ? 'summertime-' : '') . $configSunExt . '.ini');
+
 
 /* check auth */
 $auth = new auth($config->get('auth'));
